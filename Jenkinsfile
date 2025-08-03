@@ -1,17 +1,22 @@
 pipeline {
-  agent any
-
-  stages {
-    stage('Install dependencies') {
-      steps {
-        bat 'npm install'
-      }
+    agent {
+        docker {
+            image 'cypress/included:12.17.1'
+            args '-u 1000:1000'
+        }
     }
 
-    stage('Run Cypress tests') {
-      steps {
-        bat 'npx cypress run'
-      }
+    stages {
+        stage('Run Cypress Tests') {
+            steps {
+                sh 'npx cypress run --reporter mochawesome'
+            }
+        }
     }
-  }
+
+    post {
+        always {
+            archiveArtifacts artifacts: '**/mochawesome-report/*.html', fingerprint: true
+        }
+    }
 }
